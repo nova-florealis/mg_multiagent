@@ -427,7 +427,7 @@ def listen_for_speech_whisper():
     with ignoreStderr():
         mic = WhisperMic()
         utterance = mic.listen()
-        print(f"I heard: {utterance}")
+        # print(f"I heard: {utterance}")
 
         return utterance
     

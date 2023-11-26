@@ -51,6 +51,34 @@ class DialogueAgent:
     def reset(self):
         self.message_history = ["Here is the conversation so far."]
 
+    def get_human_participation_preference(self) -> bool:
+        
+        assert self.name == "Human", "Error: the agent must be the human!"
+
+        # TODO: vocalize
+        print("Would you like to speak now? Say only YES or NO")
+        user_message = PlantoidSpeech.listen_for_speech_whisper()
+
+        if "yes" in user_message.lower():
+            
+            print("The human will speak now...")
+            return True
+        
+        else:
+            print("The human will just listen for now...")
+            return False
+
+
+    def listen(self) -> str:
+
+        user_message = PlantoidSpeech.listen_for_speech_whisper()
+
+        # user_message = PlantoidSpeech.recognize_speech(audio)
+
+        print("Human said: " + user_message)
+
+        return user_message
+
     def send(self) -> str:
         """
         Applies the chatmodel to the message history

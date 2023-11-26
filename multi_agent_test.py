@@ -28,6 +28,18 @@ def select_character_voice_ids(plantoid_characters, ids):
     return ["21m00Tcm4TlvDq8ikWAM", "AZnzlk1XvdvUeBnXmlld", "IKne3meq5aSn9XLyUdCD"][:len(ids)]
     #return [plantoid_characters['characters'][id]['eleven_voice_id'] for id in ids]
 
+def prepend_human_to_characters(
+    character_names,
+    character_short_descriptions,
+    character_voice_ids,
+):
+
+    return (
+        ["Human"] + character_names,
+        ["A human being"] + character_short_descriptions,
+        [None] + character_voice_ids,
+    )
+
 if __name__ == "__main__":
 
     print("hello mechanical garden")
@@ -48,7 +60,19 @@ if __name__ == "__main__":
 
     # select character voices
     character_voice_ids = select_character_voice_ids(plantoid_characters, use_character_ids)
-    print('character_voice_ids', character_voice_ids)
+
+    # prepend human items
+    (character_names,
+    character_short_descriptions,
+    character_voice_ids,
+    ) = prepend_human_to_characters(
+        character_names,
+        character_short_descriptions,
+        character_voice_ids,
+    )
+
+    #########################################################################################
+
 
     topic = "should mechanical garden plantoids be fed ETH or BTC?"
 
@@ -57,7 +81,7 @@ if __name__ == "__main__":
 
     print("plantoid characters:", character_names)
 
-
+    # TBC if human inclusion here makes sense
     specified_topic = specify_topic_from_prompt(
         game_description,
         word_limit,
@@ -97,6 +121,7 @@ if __name__ == "__main__":
             topic,
             character_name,
             character_description,
+            word_limit,
         ) for character_name, character_description in zip(
             character_names,
             character_descriptions,
@@ -124,26 +149,26 @@ if __name__ == "__main__":
         for character_header in character_headers
     ]
 
-    ### Print descriptions ###
+    ## Print descriptions ###
 
-    # for (
-    #     character_name,
-    #     character_description,
-    #     character_header,
-    #     character_system_message,
-    #     character_bidding_template,
-    # ) in zip(
-    #     character_names,
-    #     character_descriptions,
-    #     character_headers,
-    #     character_system_messages,
-    #     character_bidding_templates, 
-    # ):
-    #     print(f"\n\n{character_name} Description:")
-    #     print(f"\n{character_description}")
-    #     print(f"\n{character_header}")
-    #     print(f"\n{character_system_message.content}")
-    #     print(f"\n{character_bidding_template}")
+    for (
+        character_name,
+        character_description,
+        character_header,
+        character_system_message,
+        character_bidding_template,
+    ) in zip(
+        character_names,
+        character_descriptions,
+        character_headers,
+        character_system_messages,
+        character_bidding_templates, 
+    ):
+        print(f"\n\n{character_name} Description:")
+        print(f"\n{character_description}")
+        print(f"\n{character_header}")
+        print(f"\n{character_system_message.content}")
+        # print(f"\n{character_bidding_template}")
 
     # Main Event Loop
 
@@ -168,7 +193,10 @@ if __name__ == "__main__":
 
     print('setting up dialogue simulator')
 
-    simulator = DialogueSimulator(agents=characters, selection_function=select_next_speaker)
+    simulator = DialogueSimulator(
+        agents=characters,
+        selection_function=select_next_speaker_with_human, #select_next_speaker
+    )
     simulator.reset()
     simulator.inject("Debate Moderator", specified_topic)
     print(f"(Debate Moderator): {specified_topic}")

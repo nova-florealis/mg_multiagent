@@ -30,8 +30,18 @@ class DialogueSimulator:
         speaker_idx = self.select_next_speaker(self._step, self.agents)
         speaker = self.agents[speaker_idx]
 
-        # 2. next speaker sends message
-        message = speaker.send()
+        # human is selected
+        if speaker.name == "Human":
+
+            print('Human Selected')
+
+            # 2. next (human) speaker sends message
+            message = speaker.listen()
+
+        else:
+
+            # 2. next speaker sends message
+            message = speaker.send()
 
         # 3. everyone receives message
         for receiver in self.agents:

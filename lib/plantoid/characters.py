@@ -40,28 +40,36 @@ def generate_character_description(
     player_descriptor_system_message,
     word_limit,
 ):
+
+    if character_name == "Human":
+
+        character_description = f"""
+            A human, which has entered the mechanical garden, here to listen and interact in the debate amongst Plantoids.
+        """
     
-    message_content = f"""{game_description}
-        Please reply with a creative description of the plantoid in the mechanical garden:, {character_name}, (a {character_short_description}), in {word_limit} words or less, that emphasizes their personalities. 
-        A "Plantoid", is an AI God that lives on the blockchain, it is embodied in the physical realm as an animatronic mechanical plant with LEDs and Sensors. It feeds on cryptocurrency and uses the energy to grow and expand its shere of influence.
-        Speak directly to {character_name}.
-        Keep everything you say to a strict maximum of two sentences.
-        Do not add anything else.
-    """
+    else:
 
-    character_specifier_prompt = [
-        player_descriptor_system_message,
-        HumanMessage(content=message_content),
-    ]
+        message_content = f"""{game_description}
+            Please reply with a creative description of the plantoid in the mechanical garden:, {character_name}, (a {character_short_description}), in {word_limit} words or less, that emphasizes their personalities. 
+            A "Plantoid", is an AI God that lives on the blockchain, it is embodied in the physical realm as an animatronic mechanical plant with LEDs and Sensors. It feeds on cryptocurrency and uses the energy to grow and expand its shere of influence.
+            Speak directly to {character_name}.
+            Keep everything you say to a strict maximum of {word_limit} words.
+            Do not add anything else.
+        """
 
-    # print('character_specifier_prompt', character_specifier_prompt)
+        character_specifier_prompt = [
+            player_descriptor_system_message,
+            HumanMessage(content=message_content),
+        ]
 
-    character_description = ChatOpenAI(
-        openai_api_key=OPENAI_API_KEY,
-        temperature=1.0,
-    )(
-        character_specifier_prompt
-    ).content
+        # print('character_specifier_prompt', character_specifier_prompt)
+
+        character_description = ChatOpenAI(
+            openai_api_key=OPENAI_API_KEY,
+            temperature=1.0,
+        )(
+            character_specifier_prompt
+        ).content
 
     return character_description
 
@@ -71,17 +79,28 @@ def generate_character_header(
     topic,
     character_name,
     character_description,
+    word_limit,
 ):
 
-    response = f"""{game_description}
-        Your name is {character_name}.
-        You are a Plantoid.
-        Your description is as follows: {character_description}
-        You are debating the topic: {topic}.
-        Your goal is to be as creative as possible and make the humans think you are Plantoid worth listening to.
-        You must take sides if the debate topic is binary and cannot be impartial.
-        You may be convinced to change your mind if you are presented with a convincing argument.
-        """
+    if character_name == "Human":
+
+        response = f"""I am a human which will listen to and speak with the plantoids."""
+
+    else:
+        response = f"""{game_description}
+            Your name is {character_name}.
+            You are a Plantoid.
+            Your description is as follows: {character_description}
+            You are debating the topic: {topic}.
+            Your goal is to be as creative as possible and make the humans think you are Plantoid worth listening to.
+            You must take sides if the debate topic is binary and cannot be impartial.
+            You may be convinced to change your mind if you are presented with a convincing argument.
+            If you change your mind, be explicit about it.
+            If you change your mind, motivate why your opinion changed.
+            You must keep all of your responses {word_limit} words!
+            You must keep all of your responses {word_limit} words, even when replying to another Plantoid!
+            You must keep all of your responses {word_limit} words, even when replying to a Human!
+            """
 
     return response
 
@@ -93,21 +112,27 @@ def generate_character_system_message(
     character_header,
 ):
 
-    content = f"""{character_header}
-        You will speak in the style of {character_name}, and exaggerate their personality.
-        You will come up with creative ideas related to {topic}.
-        Do not say the same things over and over again.
-        Speak in the first person from the perspective of {character_name}
-        Do not describe your own body movements.
-        Please provide responses only in clear, spoken language suitable for a Text-to-Speech engine.
-        Avoid describing unspoken sounds or actions.
-        Do not change roles!
-        Do not speak from the perspective of anyone else.
-        Speak only from the perspective of {character_name}.
-        Stop speaking the moment you finish speaking from your perspective.
-        Never forget to keep your response to {word_limit} words!
-        Do not add anything else.
-    """
+    if character_name == "Human":
+
+        content = f"""I am a human which will listen to and speak with the plantoids. Do not take me for a plantoid."""
+
+    else:
+
+        content = f"""{character_header}
+            You will speak in the style of {character_name}, and exaggerate their personality.
+            You will come up with creative ideas related to {topic}.
+            Do not say the same things over and over again.
+            Speak in the first person from the perspective of {character_name}
+            Do not describe your own body movements.
+            Please provide responses only in clear, spoken language suitable for a Text-to-Speech engine.
+            Avoid describing unspoken sounds or actions.
+            Do not change roles!
+            Do not speak from the perspective of anyone else.
+            Speak only from the perspective of {character_name}.
+            Stop speaking the moment you finish speaking from your perspective.
+            Never forget to keep your response to {word_limit} words!
+            Do not add anything else.
+        """
 
     return SystemMessage(content=content)
 
@@ -138,6 +163,64 @@ def select_next_speaker(step: int, agents: List[DialogueAgent]) -> int:
     bids = []
     for agent in agents:
         bid = ask_for_bid(agent)
+        bids.append(bid)
+
+    # randomly select among multiple agents with the same bid
+    max_value = np.max(bids)
+    max_indices = np.where(bids == max_value)[0]
+    idx = np.random.choice(max_indices)
+
+    print("Bids:")
+    for i, (bid, agent) in enumerate(zip(bids, agents)):
+        print(f"\t{agent.name} bid: {bid}")
+        if i == idx:
+            selected_name = agent.name
+    print(f"Selected: {selected_name}")
+    print("\n")
+    return idx
+
+def check_last_speaker_is_human(agent: DialogueAgent):
+
+    last_item = agent.message_history[-1]
+    print("latest message history:", last_item)
+
+    if last_item.split(":")[0] == "Human":
+        print("Last speaker was human")
+
+        return True
+    
+    return False
+
+
+def select_next_speaker_with_human(
+    step: int,
+    agents: List[DialogueAgent],
+) -> int:
+
+    # initialize bids
+    bids = []
+
+    # get human and agent preferences
+    for agent in agents:
+
+        if agent.name == "Human":
+
+            print("checking for human pariticipation...")
+            last_speaker_is_human = check_last_speaker_is_human(agent)
+
+            if last_speaker_is_human:
+
+                will_participate = False
+
+            else:
+                will_participate = agent.get_human_participation_preference()
+
+            # hacky to be max bid of 10 + 1, to be fixed or added to config file
+            bid = 11 if will_participate else 0
+        else:
+            bid = ask_for_bid(agent)
+        
+        # append bid to bids
         bids.append(bid)
 
     # randomly select among multiple agents with the same bid
