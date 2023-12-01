@@ -28,16 +28,17 @@ def specify_topic_from_prompt(
         HumanMessage(
             content=f"""{game_description}
             
-            You are the Mechanical Garden's debate moderator.
+            You are the debate moderator.
             Please make the debate topic more specific. 
             Frame the debate topic as a problem to be solved.
             Be creative and imaginative.
             Do not deviate from the contents of the debate topic if it is already specific enough.
             Please reply with the specified topic in {word_limit} words or less. 
-            Speak directly to the Plantoids: {*character_names,}.
+            Speak directly to the participants: {*character_names,}.
             Do not add anything else."""
         ),
     ]
+    #TODO: read the prompt
 
     specified_topic = ChatOpenAI(
         openai_api_key=OPENAI_API_KEY,

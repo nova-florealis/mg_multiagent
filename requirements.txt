@@ -4,7 +4,6 @@ python-dotenv
 wave
 openai
 requests
-playsound
 pydub
 sounddevice
 numpy

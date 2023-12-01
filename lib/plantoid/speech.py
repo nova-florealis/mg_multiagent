@@ -446,7 +446,7 @@ def stream_audio_response(response, voice_id, callback=None):
     # generate audio stream   
     audio_stream = generate(
         text=f"{response}",
-        model="eleven_multilingual_v2",
+        model="eleven_turbo_v2",
         voice=voice_id,
         stream=True
     )

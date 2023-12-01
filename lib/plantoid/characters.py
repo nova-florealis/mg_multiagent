@@ -1,5 +1,7 @@
 from typing import Callable, List
+import random
 import tenacity
+import playsound
 import os
 import numpy as np
 from langchain.chat_models import ChatOpenAI
@@ -44,14 +46,13 @@ def generate_character_description(
     if character_name == "Human":
 
         character_description = f"""
-            A human, which has entered the mechanical garden, here to listen and interact in the debate amongst Plantoids.
+            The real Tony, not a simulated Tony.
         """
     
     else:
 
         message_content = f"""{game_description}
-            Please reply with a creative description of the plantoid in the mechanical garden:, {character_name}, (a {character_short_description}), in {word_limit} words or less, that emphasizes their personalities. 
-            A "Plantoid", is an AI God that lives on the blockchain, it is embodied in the physical realm as an animatronic mechanical plant with LEDs and Sensors. It feeds on cryptocurrency and uses the energy to grow and expand its shere of influence.
+            Please to, {character_name}, (a {character_short_description}), in {word_limit} words or less. 
             Speak directly to {character_name}.
             Keep everything you say to a strict maximum of {word_limit} words.
             Do not add anything else.
@@ -89,17 +90,15 @@ def generate_character_header(
     else:
         response = f"""{game_description}
             Your name is {character_name}.
-            You are a Plantoid.
+            You are a fake version of Tony, speaking to the real Tony.
             Your description is as follows: {character_description}
             You are debating the topic: {topic}.
-            Your goal is to be as creative as possible and make the humans think you are Plantoid worth listening to.
-            You must take sides if the debate topic is binary and cannot be impartial.
+            Your goal is engage in an ethical and philosophical discussion.
+            You must state your true opinion, but make sure to consider what the others are thinking.
             You may be convinced to change your mind if you are presented with a convincing argument.
             If you change your mind, be explicit about it.
             If you change your mind, motivate why your opinion changed.
             You must keep all of your responses {word_limit} words!
-            You must keep all of your responses {word_limit} words, even when replying to another Plantoid!
-            You must keep all of your responses {word_limit} words, even when replying to a Human!
             """
 
     return response
@@ -114,16 +113,15 @@ def generate_character_system_message(
 
     if character_name == "Human":
 
-        content = f"""I am a human which will listen to and speak with the plantoids. Do not take me for a plantoid."""
+        content = f"""I am the real Tony. Do not mistake me for a simulated Tony."""
 
     else:
 
         content = f"""{character_header}
-            You will speak in the style of {character_name}, and exaggerate their personality.
-            You will come up with creative ideas related to {topic}.
+            You will speak in the style of {character_name}, and exaggerate your personality.
+            You will enage thoughtfully. {topic}.
             Do not say the same things over and over again.
             Speak in the first person from the perspective of {character_name}
-            Do not describe your own body movements.
             Please provide responses only in clear, spoken language suitable for a Text-to-Speech engine.
             Avoid describing unspoken sounds or actions.
             Do not change roles!
@@ -131,7 +129,6 @@ def generate_character_system_message(
             Speak only from the perspective of {character_name}.
             Stop speaking the moment you finish speaking from your perspective.
             Never forget to keep your response to {word_limit} words!
-            Do not add anything else.
         """
 
     return SystemMessage(content=content)
@@ -146,7 +143,7 @@ def generate_character_bidding_template(
         {{message_history}}
         ```
 
-        On the scale of 1 to 10, where 1 is not contradictory and 10 is extremely contradictory, rate how contradictory the following message is to your ideas.
+        On the scale of 1 to 10, where 1 is "strongly agree" and 10 is "strongly disagree", rate your response to this argument:
 
         ```
         {{recent_message}}
@@ -205,7 +202,7 @@ def select_next_speaker_with_human(
 
         if agent.name == "Human":
 
-            print("checking for human pariticipation...")
+            print("checking for human participation...")
             last_speaker_is_human = check_last_speaker_is_human(agent)
 
             if last_speaker_is_human:
@@ -213,7 +210,11 @@ def select_next_speaker_with_human(
                 will_participate = False
 
             else:
-                will_participate = agent.get_human_participation_preference()
+                # 1 out of 3 times, will_participate = True
+                will_participate = random.choice([True, False])
+                
+                if will_participate == True:
+                    playsound.playsound("media/your_turn.mp3")
 
             # hacky to be max bid of 10 + 1, to be fixed or added to config file
             bid = 11 if will_participate else 0

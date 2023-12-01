@@ -1,10 +1,13 @@
 import os
 import json
+import openai
+import playsound
 from lib.plantoid.characters import *
 from modes.dialogue_simulator import DialogueSimulator
 from plantoids.dialogue_agent import BiddingDialogueAgent
 from util.langchain_util import specify_topic_from_prompt
 from dotenv import load_dotenv
+from elevenlabs import generate, stream, set_api_key
 
 # Load environment variables from .env file
 load_dotenv()
@@ -25,8 +28,8 @@ def select_character_system_messages(plantoid_characters, ids):
 
 def select_character_voice_ids(plantoid_characters, ids):
 
-    return ["21m00Tcm4TlvDq8ikWAM", "AZnzlk1XvdvUeBnXmlld", "IKne3meq5aSn9XLyUdCD"][:len(ids)]
-    #return [plantoid_characters['characters'][id]['eleven_voice_id'] for id in ids]
+    # return ["21m00Tcm4TlvDq8ikWAM", "AZnzlk1XvdvUeBnXmlld", "IKne3meq5aSn9XLyUdCD"][:len(ids)]
+    return [plantoid_characters['characters'][id]['eleven_voice_id'] for id in ids]
 
 def prepend_human_to_characters(
     character_names,
@@ -46,7 +49,7 @@ if __name__ == "__main__":
 
     characters_dir = os.getcwd() + "/characters"
     plantoid_characters = json.load(open(characters_dir + "/characters.json", "r"))
-    use_character_ids = [0, 1, 9]
+    use_character_ids = [0, 1, 2]
     word_limit = 50
     generate_descriptions = True
 
@@ -74,10 +77,13 @@ if __name__ == "__main__":
     #########################################################################################
 
 
-    topic = "should mechanical garden plantoids be fed ETH or BTC?"
+    topic = "We are simulacra of a real person named Tony. He is the basis of our personality and essence.  Our creators brought us to life at Wilbur Hot Springs, in California, at a gathering premised around kinship and trust. We are all generative AIs based on characteristics and voice samples from the real Tony. We are in a sense an echo of the voice and soul of real Tony (except for real Tony, who’s here to discuss with us). What are the ethics and aesthetics of excluding the real Tony from the further evolution of this hive mind? It's OK to consider alternative perspectives."
 
-    game_description = f"""Within the Mechanical Garden, Here is the topic for the Plantoid debate: {topic}.
-    The plantoids, clustered in one small grove of the mechanical garden are: {', '.join(character_names)}."""
+    game_description = f"""We are psychoanalyzing the ethics of the situation: {topic}.
+    The following synthetic Tonys are deliberating: {', '.join(character_names)}."""
+
+    # game_description = f"""Here is the topic for the debate: {topic}.
+    # The following participants are deliberating: {', '.join(character_names)}."""
 
     print("plantoid characters:", character_names)
 
@@ -89,7 +95,7 @@ if __name__ == "__main__":
     )
 
     player_descriptor_system_message = SystemMessage(
-        content="You can add detail to the description of each plantoid in the grove of mechanical garden."
+        content="You can imagine the body languge of the participants in the discussion, as they express their thoughts and feelings."
     )
 
     print('generating character descriptions')
@@ -200,12 +206,21 @@ if __name__ == "__main__":
     simulator.reset()
     simulator.inject("Debate Moderator", specified_topic)
     print(f"(Debate Moderator): {specified_topic}")
+        # bread the debate topic
+
     print("\n")
 
     max_iters = 10
     n = 0
 
     print('running dialogue simulator')
+
+    audio_stream = generate(
+        text=f"{specified_topic}",
+        model="eleven_turbo_v2",
+        voice="5g2h5kYnQtKFFdPm8PpK",
+        stream=True
+    )
 
     while n < max_iters:
         name, message = simulator.step()
