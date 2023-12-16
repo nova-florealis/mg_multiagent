@@ -206,7 +206,13 @@ if __name__ == "__main__":
     simulator.reset()
     simulator.inject("Debate Moderator", specified_topic)
     print(f"(Debate Moderator): {specified_topic}")
-        # bread the debate topic
+        # read the debate topic
+    # audio_stream = generate(
+    #     text=f"{specified_topic}",
+    #     model="eleven_turbo_v2",
+    #     voice="5g2h5kYnQtKFFdPm8PpK",
+    #     stream=True
+    # )
 
     print("\n")
 
@@ -214,13 +220,6 @@ if __name__ == "__main__":
     n = 0
 
     print('running dialogue simulator')
-
-    audio_stream = generate(
-        text=f"{specified_topic}",
-        model="eleven_turbo_v2",
-        voice="5g2h5kYnQtKFFdPm8PpK",
-        stream=True
-    )
 
     while n < max_iters:
         name, message = simulator.step()
