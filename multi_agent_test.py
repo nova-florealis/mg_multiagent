@@ -74,7 +74,10 @@ if __name__ == "__main__":
     #########################################################################################
 
 
-    topic = "should mechanical garden plantoids be fed ETH or BTC?"
+    # topic = "should mechanical garden plantoids be fed ETH or BTC?"
+    # topic = "what is the best way to create a chakra-based party?"
+    # topic = "is Horlicks condusive to a meaningful conversation?"
+    topic = "What is the connection between tantra, mancy, and the latent space?"
 
     game_description = f"""Within the Mechanical Garden, Here is the topic for the Plantoid debate: {topic}.
     The plantoids, clustered in one small grove of the mechanical garden are: {', '.join(character_names)}."""

@@ -26,3 +26,10 @@ whisper-mic
 langchain
 elevenlabs
 simpleaichat
+text-generation
+transformers
+google-search-results
+numexpr
+langchainhub
+sentencepiece
+jinja2

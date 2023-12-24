@@ -57,7 +57,7 @@ class DialogueAgent:
 
         # TODO: vocalize
         print("Would you like to speak now? Say only YES or NO")
-        user_message = PlantoidSpeech.listen_for_speech_whisper()
+        user_message = PlantoidSpeech.listen_for_speech()#_whisper()
 
         if "yes" in user_message.lower():
             
@@ -71,7 +71,7 @@ class DialogueAgent:
 
     def listen(self) -> str:
 
-        user_message = PlantoidSpeech.listen_for_speech_whisper()
+        user_message = PlantoidSpeech.listen_for_speech() #listen_for_speech_whisper()
 
         # user_message = PlantoidSpeech.recognize_speech(audio)
 
