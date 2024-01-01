@@ -14,6 +14,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.environ.get("OPENAI")
 ELEVENLABS_API_KEY = os.environ.get("ELEVEN")
+set_api_key(ELEVENLABS_API_KEY)
 
 # TODO: this whole thing is duct tape, refactor
 
@@ -76,11 +77,11 @@ if __name__ == "__main__":
 
     #########################################################################################
 
-
+    # topic = listen_for_speech_whisper()
     topic = "We are simulacra of a real person named Tony. He is the basis of our personality and essence.  Our creators brought us to life at Wilbur Hot Springs, in California, at a gathering premised around kinship and trust. We are all generative AIs based on characteristics and voice samples from the real Tony. We are in a sense an echo of the voice and soul of real Tony (except for real Tony, who’s here to discuss with us). What are the ethics and aesthetics of excluding the real Tony from the further evolution of this hive mind? It's OK to consider alternative perspectives."
 
     game_description = f"""We are psychoanalyzing the ethics of the situation: {topic}.
-    The following synthetic Tonys are deliberating: {', '.join(character_names)}."""
+    The following synthetic people are deliberating: {', '.join(character_names)}."""
 
     # game_description = f"""Here is the topic for the debate: {topic}.
     # The following participants are deliberating: {', '.join(character_names)}."""
@@ -207,13 +208,13 @@ if __name__ == "__main__":
     simulator.inject("Debate Moderator", specified_topic)
     print(f"(Debate Moderator): {specified_topic}")
         # read the debate topic
-    # audio_stream = generate(
-    #     text=f"{specified_topic}",
-    #     model="eleven_turbo_v2",
-    #     voice="5g2h5kYnQtKFFdPm8PpK",
-    #     stream=True
-    # )
-
+    audio_stream = generate(
+        text=f"{specified_topic}",
+        model="eleven_turbo_v2",
+        voice="5g2h5kYnQtKFFdPm8PpK",
+        stream=True
+    )
+    stream(audio_stream)
     print("\n")
 
     max_iters = 10

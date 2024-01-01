@@ -14,6 +14,7 @@ from langchain.schema import (
 
 from plantoids.dialogue_agent import DialogueAgent, BiddingDialogueAgent
 from dotenv import load_dotenv
+from elevenlabs import generate, stream, set_api_key
 
 # Load environment variables from .env file
 load_dotenv()
@@ -173,6 +174,13 @@ def select_next_speaker(step: int, agents: List[DialogueAgent]) -> int:
         if i == idx:
             selected_name = agent.name
     print(f"Selected: {selected_name}")
+    audio_stream = generate(
+            text=f"{selected_name}?",
+            model="eleven_turbo_v2",
+            voice="5g2h5kYnQtKFFdPm8PpK",
+            stream=True
+        )
+    stream(audio_stream)
     print("\n")
     return idx
 
@@ -214,7 +222,13 @@ def select_next_speaker_with_human(
                 will_participate = random.choice([True, False])
                 
                 if will_participate == True:
-                    playsound.playsound("media/your_turn.mp3")
+                    audio_stream = generate(
+                    text=f"Please weigh in.",
+                    model="eleven_turbo_v2",
+                    voice="5g2h5kYnQtKFFdPm8PpK",
+                    stream=True
+                    )
+                    stream(audio_stream)
 
             # hacky to be max bid of 10 + 1, to be fixed or added to config file
             bid = 11 if will_participate else 0
@@ -235,9 +249,16 @@ def select_next_speaker_with_human(
         if i == idx:
             selected_name = agent.name
     print(f"Selected: {selected_name}")
+    #TODO: if statement in case it's a human, tee up a mdoerator question
+    audio_stream = generate(
+            text=f"{selected_name}?",
+            model="eleven_turbo_v2",
+            voice="5g2h5kYnQtKFFdPm8PpK",
+            stream=True
+        )
+    stream(audio_stream)
     print("\n")
     return idx
-
 
 @tenacity.retry(
     stop=tenacity.stop_after_attempt(2),
