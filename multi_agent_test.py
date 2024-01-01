@@ -1,10 +1,14 @@
 import os
 import json
+import openai
+import playsound
+from lib.plantoid.speech import *
 from lib.plantoid.characters import *
 from modes.dialogue_simulator import DialogueSimulator
 from plantoids.dialogue_agent import BiddingDialogueAgent
 from util.langchain_util import specify_topic_from_prompt
 from dotenv import load_dotenv
+from elevenlabs import generate, stream, set_api_key
 
 from lib.plantoid.llms import get_llm
 from util.util import load_config
@@ -13,6 +17,7 @@ load_dotenv()
 
 OPENAI_API_KEY = os.environ.get("OPENAI")
 ELEVENLABS_API_KEY = os.environ.get("ELEVEN")
+set_api_key(ELEVENLABS_API_KEY)
 
 config = load_config(os.getcwd()+"/configuration.toml")
 
@@ -33,8 +38,8 @@ def select_character_system_messages(plantoid_characters, ids):
 
 def select_character_voice_ids(plantoid_characters, ids):
 
-    return ["21m00Tcm4TlvDq8ikWAM", "AZnzlk1XvdvUeBnXmlld", "IKne3meq5aSn9XLyUdCD"][:len(ids)]
-    #return [plantoid_characters['characters'][id]['eleven_voice_id'] for id in ids]
+    # return ["21m00Tcm4TlvDq8ikWAM", "AZnzlk1XvdvUeBnXmlld", "IKne3meq5aSn9XLyUdCD"][:len(ids)]
+    return [plantoid_characters['characters'][id]['eleven_voice_id'] for id in ids]
 
 def prepend_human_to_characters(
     character_names,
@@ -54,9 +59,9 @@ if __name__ == "__main__":
 
     characters_dir = os.getcwd() + "/characters"
     plantoid_characters = json.load(open(characters_dir + "/characters.json", "r"))
-    use_character_ids = [0, 1, 9]
-    word_limit = 50
-    generate_descriptions = True
+    use_character_ids = [9, 10, 11]
+    word_limit = 40
+    generate_descriptions = False
 
     # character_names = ["Donald Trump", "Kanye West"]#, "Elizabeth Warren"]
 
@@ -81,15 +86,20 @@ if __name__ == "__main__":
 
     #########################################################################################
 
+    audio_stream = generate(
+        text=f"What shall we debate?",
+        model="eleven_turbo_v2",
+        voice="5g2h5kYnQtKFFdPm8PpK",
+        stream=True
+    )
+    stream(audio_stream)
+    topic = listen_for_speech_whisper()
 
-    # topic = "should mechanical garden plantoids be fed ETH or BTC?"
-    topic = "what is the best way to create a chakra-based party?"
-    # topic = "is Horlicks condusive to a meaningful conversation?"
-    # topic = "What is the connection between tantra, mancy, and the latent space?"
-    # topic = "What is the connection between tantra, mancy, and the latent space?"
+    game_description = f"""We are having a debate: {topic}.
+    The following personalities are participating: {', '.join(character_names)}."""
 
-    game_description = f"""Within the Mechanical Garden, Here is the topic for the Plantoid debate: {topic}.
-    The plantoids, clustered in one small grove of the mechanical garden are: {', '.join(character_names)}."""
+    # game_description = f"""Here is the topic for the debate: {topic}.
+    # The following participants are deliberating: {', '.join(character_names)}."""
 
     print("plantoid characters:", character_names)
 
@@ -101,7 +111,7 @@ if __name__ == "__main__":
     )
 
     player_descriptor_system_message = SystemMessage(
-        content="You can add detail to the description of each plantoid in the grove of mechanical garden."
+        content="Keep it short and clever."
     )
 
     print('generating character descriptions')
@@ -209,6 +219,14 @@ if __name__ == "__main__":
     simulator.reset()
     simulator.inject("Debate Moderator", specified_topic)
     print(f"(Debate Moderator): {specified_topic}")
+        # read the debate topic
+    audio_stream = generate(
+        text=f"{specified_topic}",
+        model="eleven_turbo_v2",
+        voice="5g2h5kYnQtKFFdPm8PpK",
+        stream=True
+    )
+    stream(audio_stream)
     print("\n")
 
     max_iters = 10

@@ -131,7 +131,7 @@ def get_text_to_speech_response(text, eleven_voice_id, callback=None):
     }
 
     #eleven_voice_id = '21m00Tcm4TlvDq8ikWAM' # Rachel
-    url = "https://api.elevenlabs.io/v1/text-to-speech/"+eleven_voice_id
+    url = "https://api.elevenlabs.io/v2/text-to-speech/"+eleven_voice_id
 
     # Request TTS from remote API
     response = requests.post(
@@ -446,7 +446,7 @@ def stream_audio_response(response, voice_id, callback=None):
     # generate audio stream   
     audio_stream = generate(
         text=f"{response}",
-        model="eleven_multilingual_v2",
+        model="eleven_turbo_v2",
         voice=voice_id,
         stream=True
     )
