@@ -10,12 +10,20 @@ from util.langchain_util import specify_topic_from_prompt
 from dotenv import load_dotenv
 from elevenlabs import generate, stream, set_api_key
 
+from lib.plantoid.llms import get_llm
+from util.util import load_config
 # Load environment variables from .env file
 load_dotenv()
 
 OPENAI_API_KEY = os.environ.get("OPENAI")
 ELEVENLABS_API_KEY = os.environ.get("ELEVEN")
 set_api_key(ELEVENLABS_API_KEY)
+
+config = load_config(os.getcwd()+"/configuration.toml")
+
+# instantiate the LLM to use
+use_interface = config['general']['use_llm']
+llm = get_llm(interface=use_interface)
 
 # TODO: this whole thing is duct tape, refactor
 
@@ -196,10 +204,7 @@ if __name__ == "__main__":
             BiddingDialogueAgent(
                 name=character_name,
                 system_message=character_system_message,
-                model=ChatOpenAI(
-                    openai_api_key=OPENAI_API_KEY,
-                    temperature=0.2,
-                ),
+                model=llm,
                 bidding_template=bidding_template,
                 eleven_voice_id=character_voice_id, # TODO: dynamic
             )

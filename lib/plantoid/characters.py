@@ -4,7 +4,6 @@ import tenacity
 import playsound
 import os
 import numpy as np
-from langchain.chat_models import ChatOpenAI
 from langchain.output_parsers import RegexParser
 from langchain.prompts import PromptTemplate
 from langchain.schema import (
@@ -16,12 +15,20 @@ from plantoids.dialogue_agent import DialogueAgent, BiddingDialogueAgent
 from dotenv import load_dotenv
 from elevenlabs import generate, stream, set_api_key
 
+from lib.plantoid.llms import get_llm
+from util.util import load_config
+
 # Load environment variables from .env file
 load_dotenv()
 
 OPENAI_API_KEY = os.environ.get("OPENAI")
 ELEVENLABS_API_KEY = os.environ.get("ELEVEN")
 
+config = load_config(os.getcwd()+"/configuration.toml")
+
+# instantiate the LLM to use
+use_interface = config['general']['use_llm']
+llm = get_llm(interface=use_interface)
 
 class BidOutputParser(RegexParser):
     def get_format_instructions(self) -> str:
@@ -66,10 +73,14 @@ def generate_character_description(
 
         # print('character_specifier_prompt', character_specifier_prompt)
 
-        character_description = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            temperature=1.0,
-        )(
+        # character_description = ChatOpenAI(
+        #     openai_api_key=OPENAI_API_KEY,
+        #     temperature=1.0,
+        # )(
+        #     character_specifier_prompt
+        # ).content
+
+        character_description = llm(
             character_specifier_prompt
         ).content
 

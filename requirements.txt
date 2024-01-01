@@ -23,5 +23,13 @@ torch
 openai-whisper
 whisper-mic
 langchain
+huggingface_hub
 elevenlabs
 simpleaichat
+text-generation
+transformers
+google-search-results
+numexpr
+langchainhub
+sentencepiece
+jinja2
