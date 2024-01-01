@@ -51,9 +51,9 @@ if __name__ == "__main__":
 
     characters_dir = os.getcwd() + "/characters"
     plantoid_characters = json.load(open(characters_dir + "/characters.json", "r"))
-    use_character_ids = [3, 4, 6]
+    use_character_ids = [9, 10, 11]
     word_limit = 40
-    generate_descriptions = True
+    generate_descriptions = False
 
     # character_names = ["Donald Trump", "Kanye West"]#, "Elizabeth Warren"]
 

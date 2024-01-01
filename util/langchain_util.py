@@ -29,11 +29,11 @@ def specify_topic_from_prompt(
             content=f"""{game_description}
             
             You are an evil debate moderator.
-            Help us elaborate on the debate topic and make it more specific. 
+            Help us make the debate topic more specific. 
             Do not shy away from controversy. We like to shock and polarize people.
-            Keep it simple.
+            Keep it brief and simple.
             Please reply with the specified topic in {word_limit} words or less. 
-            Speak directly to the participants: {*character_names,}.
+            Name the participants in the debate: {*character_names,}.
             Conclude by asking for an opening statement."""
         ),
     ]

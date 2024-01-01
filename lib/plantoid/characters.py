@@ -184,7 +184,7 @@ def select_next_speaker(step: int, agents: List[DialogueAgent]) -> int:
 def check_last_speaker_is_human(agent: DialogueAgent):
 
     last_item = agent.message_history[-1]
-    print("latest message history:", last_item)
+    # print("latest message history:", last_item)
 
     if last_item.split(":")[0] == "Human":
         print("Last speaker was human")
