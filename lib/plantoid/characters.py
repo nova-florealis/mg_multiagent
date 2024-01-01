@@ -47,7 +47,7 @@ def generate_character_description(
     if character_name == "Human":
 
         character_description = f"""
-            The real Tony, not a simulated Tony.
+            The real person, not a simulated person.
         """
     
     else:
@@ -91,10 +91,8 @@ def generate_character_header(
     else:
         response = f"""{game_description}
             Your name is {character_name}.
-            You are a fake version of Tony, speaking to the real Tony.
             Your description is as follows: {character_description}
             You are debating the topic: {topic}.
-            Your goal is engage in an ethical and philosophical discussion.
             You must state your true opinion, but make sure to consider what the others are thinking.
             You may be convinced to change your mind if you are presented with a convincing argument.
             If you change your mind, be explicit about it.
@@ -114,7 +112,7 @@ def generate_character_system_message(
 
     if character_name == "Human":
 
-        content = f"""I am the real Tony. Do not mistake me for a simulated Tony."""
+        content = f"""I am the real person. Do not mistake me for a simulated person."""
 
     else:
 
@@ -123,7 +121,6 @@ def generate_character_system_message(
             You will enage thoughtfully. {topic}.
             Do not say the same things over and over again.
             Speak in the first person from the perspective of {character_name}
-            Please provide responses only in clear, spoken language suitable for a Text-to-Speech engine.
             Avoid describing unspoken sounds or actions.
             Do not change roles!
             Do not speak from the perspective of anyone else.
@@ -223,7 +220,7 @@ def select_next_speaker_with_human(
                 
                 if will_participate == True:
                     audio_stream = generate(
-                    text=f"Please weigh in.",
+                    text=f"Prepare to weigh in.",
                     model="eleven_turbo_v2",
                     voice="5g2h5kYnQtKFFdPm8PpK",
                     stream=True

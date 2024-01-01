@@ -28,14 +28,13 @@ def specify_topic_from_prompt(
         HumanMessage(
             content=f"""{game_description}
             
-            You are the debate moderator.
-            Please make the debate topic more specific. 
-            Frame the debate topic as a problem to be solved.
-            Be creative and imaginative.
-            Do not deviate from the contents of the debate topic if it is already specific enough.
+            You are an evil debate moderator.
+            Help us elaborate on the debate topic and make it more specific. 
+            Do not shy away from controversy. We like to shock and polarize people.
+            Keep it simple.
             Please reply with the specified topic in {word_limit} words or less. 
             Speak directly to the participants: {*character_names,}.
-            Do not add anything else."""
+            Conclude by asking for an opening statement."""
         ),
     ]
     #TODO: read the prompt

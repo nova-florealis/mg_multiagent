@@ -2,6 +2,7 @@ import os
 import json
 import openai
 import playsound
+from lib.plantoid.speech import *
 from lib.plantoid.characters import *
 from modes.dialogue_simulator import DialogueSimulator
 from plantoids.dialogue_agent import BiddingDialogueAgent
@@ -50,8 +51,8 @@ if __name__ == "__main__":
 
     characters_dir = os.getcwd() + "/characters"
     plantoid_characters = json.load(open(characters_dir + "/characters.json", "r"))
-    use_character_ids = [0, 1, 2]
-    word_limit = 50
+    use_character_ids = [3, 4, 6]
+    word_limit = 40
     generate_descriptions = True
 
     # character_names = ["Donald Trump", "Kanye West"]#, "Elizabeth Warren"]
@@ -77,11 +78,17 @@ if __name__ == "__main__":
 
     #########################################################################################
 
-    # topic = listen_for_speech_whisper()
-    topic = "We are simulacra of a real person named Tony. He is the basis of our personality and essence.  Our creators brought us to life at Wilbur Hot Springs, in California, at a gathering premised around kinship and trust. We are all generative AIs based on characteristics and voice samples from the real Tony. We are in a sense an echo of the voice and soul of real Tony (except for real Tony, who’s here to discuss with us). What are the ethics and aesthetics of excluding the real Tony from the further evolution of this hive mind? It's OK to consider alternative perspectives."
+    audio_stream = generate(
+        text=f"What shall we debate?",
+        model="eleven_turbo_v2",
+        voice="5g2h5kYnQtKFFdPm8PpK",
+        stream=True
+    )
+    stream(audio_stream)
+    topic = listen_for_speech_whisper()
 
-    game_description = f"""We are psychoanalyzing the ethics of the situation: {topic}.
-    The following synthetic people are deliberating: {', '.join(character_names)}."""
+    game_description = f"""We are having a debate: {topic}.
+    The following personalities are participating: {', '.join(character_names)}."""
 
     # game_description = f"""Here is the topic for the debate: {topic}.
     # The following participants are deliberating: {', '.join(character_names)}."""
@@ -96,7 +103,7 @@ if __name__ == "__main__":
     )
 
     player_descriptor_system_message = SystemMessage(
-        content="You can imagine the body languge of the participants in the discussion, as they express their thoughts and feelings."
+        content="Keep it short and clever."
     )
 
     print('generating character descriptions')
