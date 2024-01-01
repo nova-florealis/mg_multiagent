@@ -25,6 +25,8 @@ config = load_config(os.getcwd()+"/configuration.toml")
 use_interface = config['general']['use_llm']
 llm = get_llm(interface=use_interface)
 
+use_narrator_voice_id = config['general']['use_narrator_voice_id']
+
 # TODO: this whole thing is duct tape, refactor
 
 def select_character_names(plantoid_characters, ids):
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     plantoid_characters = json.load(open(characters_dir + "/characters.json", "r"))
     use_character_ids = [9, 10, 11]
     word_limit = 40
-    generate_descriptions = False
+    generate_descriptions = True
 
     # character_names = ["Donald Trump", "Kanye West"]#, "Elizabeth Warren"]
 
@@ -69,7 +71,7 @@ if __name__ == "__main__":
     character_names = select_character_names(plantoid_characters, use_character_ids)#, 2])
 
     # select character descriptions
-    character_short_descriptions = select_character_descriptions(plantoid_characters, use_character_ids)
+    character_short_descriptions = select_character_system_messages(plantoid_characters, use_character_ids)
 
     # select character voices
     character_voice_ids = select_character_voice_ids(plantoid_characters, use_character_ids)
@@ -89,9 +91,10 @@ if __name__ == "__main__":
     audio_stream = generate(
         text=f"What shall we debate?",
         model="eleven_turbo_v2",
-        voice="5g2h5kYnQtKFFdPm8PpK",
+        voice=use_narrator_voice_id,
         stream=True
     )
+
     stream(audio_stream)
     topic = listen_for_speech_whisper()
 
@@ -116,8 +119,9 @@ if __name__ == "__main__":
 
     print('generating character descriptions')
 
-    if generate_descriptions:
+    if generate_descriptions == True:
 
+        print("Generating descriptions...")
         character_descriptions = [
             generate_character_description(
                 character_name,
@@ -133,6 +137,7 @@ if __name__ == "__main__":
 
     else:
 
+        print("Directly using descriptions...")
         character_descriptions = character_short_descriptions#, 2])
 
     print('generating character headers')
@@ -186,10 +191,10 @@ if __name__ == "__main__":
         character_system_messages,
         character_bidding_templates, 
     ):
-        print(f"\n\n{character_name} Description:")
-        print(f"\n{character_description}")
-        print(f"\n{character_header}")
-        print(f"\n{character_system_message.content}")
+        print(f"\n\n{character_name} Items:")
+        print(f"Character Description: \n{character_description}")
+        print(f"Character Header: \n{character_header}")
+        print(f"Character System Message: \n{character_system_message.content}")
         # print(f"\n{character_bidding_template}")
 
     # Main Event Loop
@@ -223,7 +228,7 @@ if __name__ == "__main__":
     audio_stream = generate(
         text=f"{specified_topic}",
         model="eleven_turbo_v2",
-        voice="5g2h5kYnQtKFFdPm8PpK",
+        voice=use_narrator_voice_id,
         stream=True
     )
     stream(audio_stream)

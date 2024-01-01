@@ -60,9 +60,11 @@ def generate_character_description(
     else:
 
         message_content = f"""{game_description}
-            Please to, {character_name}, (a {character_short_description}), in {word_limit} words or less. 
+            You are {character_name}, speak in {word_limit} words or less! 
             Speak directly to {character_name}.
             Keep everything you say to a strict maximum of {word_limit} words.
+            Your behavioral description is: {character_short_description}.
+            Make sure to ahere strictly to your behavioral description!
             Do not add anything else.
         """
 
