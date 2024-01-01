@@ -1,10 +1,12 @@
-from typing import Callable, List
+from typing import Callable, List, Union
 import numpy as np
 import pygame
 from playsound import playsound
 import os
 
 from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models.huggingface import ChatHuggingFace
+
 from langchain.output_parsers import RegexParser
 from langchain.prompts import PromptTemplate
 from langchain.schema import (
@@ -22,7 +24,7 @@ class DialogueAgent:
         self,
         name: str,
         system_message: SystemMessage,
-        model: ChatOpenAI,
+        model: Union[ChatOpenAI, ChatHuggingFace],
         eleven_voice_id: str,
     ) -> None:
         self.name = name
@@ -57,7 +59,8 @@ class DialogueAgent:
 
         # TODO: vocalize
         print("Would you like to speak now? Say only YES or NO")
-        user_message = PlantoidSpeech.listen_for_speech()#_whisper()
+        # user_message = PlantoidSpeech.listen_for_speech()#_whisper()
+        user_message = PlantoidSpeech.listen_for_speech_whisper()
 
         if "yes" in user_message.lower():
             
@@ -71,8 +74,8 @@ class DialogueAgent:
 
     def listen(self) -> str:
 
-        user_message = PlantoidSpeech.listen_for_speech() #listen_for_speech_whisper()
-
+        # user_message = PlantoidSpeech.listen_for_speech()
+        user_message = PlantoidSpeech.listen_for_speech_whisper()
         # user_message = PlantoidSpeech.recognize_speech(audio)
 
         print("Human said: " + user_message)

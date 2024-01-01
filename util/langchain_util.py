@@ -1,21 +1,26 @@
 import os
 from typing import Callable, List
-from langchain.chat_models import ChatOpenAI
-from langchain.output_parsers import RegexParser
-from langchain.prompts import PromptTemplate
 from langchain.schema import (
     HumanMessage,
     SystemMessage,
 )
 
 from dotenv import load_dotenv
+from lib.plantoid.llms import get_llm
+from util.util import load_config
 
 # Load environment variables from .env file
 load_dotenv()
 
+config = load_config(os.getcwd()+"/configuration.toml")
+
+
 OPENAI_API_KEY = os.environ.get("OPENAI")
 ELEVENLABS_API_KEY = os.environ.get("ELEVEN")
 
+# instantiate the LLM to use
+use_interface = config['general']['use_llm']
+llm = get_llm(interface=use_interface)
 
 def specify_topic_from_prompt(
     game_description,
@@ -39,9 +44,11 @@ def specify_topic_from_prompt(
         ),
     ]
 
-    specified_topic = ChatOpenAI(
-        openai_api_key=OPENAI_API_KEY,
-        temperature=1.0,
-    )(topic_specifier_prompt).content
+    # specified_topic = ChatOpenAI(
+    #     openai_api_key=OPENAI_API_KEY,
+    #     temperature=1.0,
+    # )(topic_specifier_prompt).content
+
+    specified_topic = llm(topic_specifier_prompt).content
 
     return specified_topic

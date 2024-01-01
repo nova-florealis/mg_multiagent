@@ -24,6 +24,7 @@ torch
 openai-whisper
 whisper-mic
 langchain
+huggingface_hub
 elevenlabs
 simpleaichat
 text-generation
