@@ -97,10 +97,13 @@ class DialogueAgent:
         # generate the message from the langchain model
         print(self.name, 'is thinking about response...')
 
+        use_content = "\n".join(self.message_history + [self.prefix])
+        # print("use_content:", use_content)
+
         message = self.model(
             [
                 self.system_message,
-                HumanMessage(content="\n".join(self.message_history + [self.prefix])),
+                HumanMessage(content=use_content),
             ]
         )
 
@@ -145,7 +148,20 @@ class BiddingDialogueAgent(DialogueAgent):
             message_history="\n".join(self.message_history),
             recent_message=self.message_history[-1],
         )
-        bid_string = self.model([SystemMessage(content=prompt)]).content
+
+        # TODO: tbc move this functionality to characters.py and just call it here
+        # print("Bid prompt is:", prompt)
+
+        # bid_string = self.model([SystemMessage(content=prompt)]).content
+
+        bid_resolution_prompt = [
+            SystemMessage(content=prompt),
+            HumanMessage(content="Your response should be an integer delimited by angled brackets, like this: <int>"),
+        ]
+
+        bid_string = self.model(bid_resolution_prompt).content
+        # print("Bid string is:", bid_string)
+
         return bid_string
 
 #TODO: do not commingle classes and functions here

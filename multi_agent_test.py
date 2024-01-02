@@ -6,7 +6,7 @@ from lib.plantoid.speech import *
 from lib.plantoid.characters import *
 from modes.dialogue_simulator import DialogueSimulator
 from plantoids.dialogue_agent import BiddingDialogueAgent
-from util.langchain_util import specify_topic_from_prompt
+# from util.langchain_util import specify_topic_from_prompt
 from dotenv import load_dotenv
 from elevenlabs import generate, stream, set_api_key
 
@@ -62,8 +62,8 @@ if __name__ == "__main__":
     characters_dir = os.getcwd() + "/characters"
     plantoid_characters = json.load(open(characters_dir + "/characters.json", "r"))
     use_character_ids = [9, 10, 11]
-    word_limit = 40
-    generate_descriptions = True
+    word_limit = 60
+    generate_descriptions = False
 
     # character_names = ["Donald Trump", "Kanye West"]#, "Elizabeth Warren"]
 
@@ -88,6 +88,7 @@ if __name__ == "__main__":
 
     #########################################################################################
 
+    print("Prompt speaker for debate topic:")
     audio_stream = generate(
         text=f"What shall we debate?",
         model="eleven_turbo_v2",
@@ -113,6 +114,8 @@ if __name__ == "__main__":
         character_names,
     )
 
+    specified_game_description = f"""We are having a debate: {specified_topic}."""
+
     player_descriptor_system_message = SystemMessage(
         content="Keep it short and clever."
     )
@@ -126,7 +129,7 @@ if __name__ == "__main__":
             generate_character_description(
                 character_name,
                 character_short_description,
-                game_description,
+                specified_game_description,
                 player_descriptor_system_message,
                 word_limit,
             ) for character_name, character_short_description in zip(
@@ -144,8 +147,8 @@ if __name__ == "__main__":
 
     character_headers = [
         generate_character_header(
-            game_description,
-            topic,
+            specified_game_description,
+            specified_topic,
             character_name,
             character_description,
             word_limit,
@@ -159,7 +162,7 @@ if __name__ == "__main__":
 
     character_system_messages = [
         generate_character_system_message(
-            topic,
+            specified_topic,
             word_limit,
             character_name,
             character_headers,

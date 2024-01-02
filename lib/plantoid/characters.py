@@ -28,11 +28,19 @@ config = load_config(os.getcwd()+"/configuration.toml")
 
 # instantiate the LLM to use
 use_interface = config['general']['use_llm']
+use_narrator_voice_id = config['general']['use_narrator_voice_id']
 llm = get_llm(interface=use_interface)
 
 class BidOutputParser(RegexParser):
+    
     def get_format_instructions(self) -> str:
-        return "Your response should be an integer delimited by angled brackets, like this: <int>."
+         
+        instructions = f"""Your response should be an integer delimited by angled brackets, like this: <int>.
+        This integer should ALWAYS be the ONLY thing you respond with, like this: <int> !
+        Never reply with anything but an integer delimited by angled brackets, like this: <int> !!!
+        """
+
+        return instructions
     
 def get_bid_parser() -> BidOutputParser:
 
@@ -42,6 +50,40 @@ def get_bid_parser() -> BidOutputParser:
 
     return bid_parser
 
+def specify_topic_from_prompt(
+    game_description,
+    word_limit,
+    character_names,
+):
+    
+    # content = f"""{game_description}
+            
+    #     You are an evil debate moderator.
+    #     Help us make the debate topic more specific. 
+    #     Do not shy away from controversy. We like to shock and polarize people.
+    #     Keep it brief and simple.
+    #     Please reply with the specified topic in {word_limit} words or less. 
+    #     Name the participants in the debate: {*character_names,}.
+    #     Conclude by asking for an opening statement.
+    # """
+
+    content = f"""{game_description}
+            
+        You are an evil debate moderator.
+        Help us make the debate topic more specific. 
+        Do not shy away from controversy. We like to shock and polarize people.
+        Keep it brief and simple.
+        Please reply with the specified topic in {word_limit} words or less. 
+    """
+
+    topic_specifier_prompt = [
+        SystemMessage(content="You can make a task more specific."),
+        HumanMessage(content=content),
+    ]
+
+    specified_topic = llm(topic_specifier_prompt).content
+
+    return specified_topic
 
 def generate_character_description(
     character_name,
@@ -102,16 +144,27 @@ def generate_character_header(
         response = f"""I am a human which will listen to and speak with the plantoids."""
 
     else:
+        # response = f"""{game_description}
+        #     Your name is {character_name}.
+        #     Your description is as follows: {character_description}
+        #     You are debating the topic: {topic}.
+        #     You must state your true opinion, but make sure to consider what the others are thinking.
+        #     You may be convinced to change your mind if you are presented with a convincing argument.
+        #     If you change your mind, be explicit about it.
+        #     If you change your mind, motivate why your opinion changed.
+        #     You must keep all of your responses {word_limit} words!
+        # """
+        
         response = f"""{game_description}
-            Your name is {character_name}.
-            Your description is as follows: {character_description}
-            You are debating the topic: {topic}.
+            
+            Your character description: {character_description}
+            Always adhere to your character description, be poignant and extreme if you must!
             You must state your true opinion, but make sure to consider what the others are thinking.
             You may be convinced to change your mind if you are presented with a convincing argument.
             If you change your mind, be explicit about it.
             If you change your mind, motivate why your opinion changed.
-            You must keep all of your responses {word_limit} words!
-            """
+            You must keep all of your responses to strictly {word_limit} words!!!
+        """
 
     return response
 
@@ -129,17 +182,25 @@ def generate_character_system_message(
 
     else:
 
+        # content = f"""{character_header}
+        #     You will speak in the style of {character_name}, and exaggerate your personality.
+        #     You will enage thoughtfully on the topic of: {topic}.
+        #     Do not say the same things over and over again.
+        #     Speak in the first person from the perspective of {character_name}
+        #     Avoid describing unspoken sounds or actions.
+        #     Do not change roles!
+        #     Do not speak from the perspective of anyone else.
+        #     Speak only from the perspective of {character_name}.
+        #     Stop speaking the moment you finish speaking from your perspective.
+        #     Never forget to keep your response to {word_limit} words!
+        # """
+
         content = f"""{character_header}
-            You will speak in the style of {character_name}, and exaggerate your personality.
-            You will enage thoughtfully. {topic}.
-            Do not say the same things over and over again.
-            Speak in the first person from the perspective of {character_name}
             Avoid describing unspoken sounds or actions.
             Do not change roles!
             Do not speak from the perspective of anyone else.
-            Speak only from the perspective of {character_name}.
             Stop speaking the moment you finish speaking from your perspective.
-            Never forget to keep your response to {word_limit} words!
+            Never forget to keep your response to {word_limit} words!!!
         """
 
     return SystemMessage(content=content)
@@ -164,6 +225,8 @@ def generate_character_bidding_template(
         Do nothing else.
     """
 
+    # print("Bidding template is:", bidding_template)
+
     return bidding_template
 
 def select_next_speaker(step: int, agents: List[DialogueAgent]) -> int:
@@ -184,12 +247,14 @@ def select_next_speaker(step: int, agents: List[DialogueAgent]) -> int:
         if i == idx:
             selected_name = agent.name
     print(f"Selected: {selected_name}")
+
     audio_stream = generate(
             text=f"{selected_name}?",
             model="eleven_turbo_v2",
-            voice="5g2h5kYnQtKFFdPm8PpK",
+            voice=use_narrator_voice_id,
             stream=True
         )
+    
     stream(audio_stream)
     print("\n")
     return idx
@@ -232,12 +297,15 @@ def select_next_speaker_with_human(
                 will_participate = random.choice([True, False])
                 
                 if will_participate == True:
+
                     audio_stream = generate(
-                    text=f"Prepare to weigh in.",
-                    model="eleven_turbo_v2",
-                    voice="5g2h5kYnQtKFFdPm8PpK",
-                    stream=True
+                        text=f"Prepare to weigh in.",
+                        model="eleven_turbo_v2",
+                        voice=use_narrator_voice_id,
+                        stream=True
                     )
+
+                    print("Prepare to weigh in.")
                     stream(audio_stream)
 
             # hacky to be max bid of 10 + 1, to be fixed or added to config file
@@ -259,13 +327,15 @@ def select_next_speaker_with_human(
         if i == idx:
             selected_name = agent.name
     print(f"Selected: {selected_name}")
+
     #TODO: if statement in case it's a human, tee up a mdoerator question
     audio_stream = generate(
             text=f"{selected_name}?",
             model="eleven_turbo_v2",
-            voice="5g2h5kYnQtKFFdPm8PpK",
+            voice=use_narrator_voice_id,
             stream=True
         )
+    
     stream(audio_stream)
     print("\n")
     return idx
