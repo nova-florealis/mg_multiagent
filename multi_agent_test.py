@@ -99,13 +99,15 @@ if __name__ == "__main__":
     stream(audio_stream)
     topic = listen_for_speech_whisper()
 
+    print("Heard debate topic:", topic)
+
     game_description = f"""We are having a debate: {topic}.
     The following personalities are participating: {', '.join(character_names)}."""
 
     # game_description = f"""Here is the topic for the debate: {topic}.
     # The following participants are deliberating: {', '.join(character_names)}."""
 
-    print("plantoid characters:", character_names)
+    print("plantoid characters:", character_names[1:])
 
     # TBC if human inclusion here makes sense
     specified_topic = specify_topic_from_prompt(
@@ -115,6 +117,12 @@ if __name__ == "__main__":
     )
 
     specified_game_description = f"""We are having a debate: {specified_topic}."""
+
+    specified_participants = specify_participants(
+        specified_game_description,
+        word_limit,
+        character_names,
+    )
 
     player_descriptor_system_message = SystemMessage(
         content="Keep it short and clever."
@@ -226,10 +234,16 @@ if __name__ == "__main__":
     )
     simulator.reset()
     simulator.inject("Debate Moderator", specified_topic)
-    print(f"(Debate Moderator): {specified_topic}")
+
+    debate_opening = f"""
+        {specified_topic}
+        {specified_participants}
+    """
+
+    print(f"(Debate Moderator): {debate_opening}")
         # read the debate topic
     audio_stream = generate(
-        text=f"{specified_topic}",
+        text=debate_opening,
         model="eleven_turbo_v2",
         voice=use_narrator_voice_id,
         stream=True

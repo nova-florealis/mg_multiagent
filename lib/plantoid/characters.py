@@ -70,14 +70,41 @@ def specify_topic_from_prompt(
     content = f"""{game_description}
             
         You are an evil debate moderator.
-        Help us make the debate topic more specific. 
+        You must make the debate topic more specific. 
         Do not shy away from controversy. We like to shock and polarize people.
-        Keep it brief and simple.
-        Please reply with the specified topic in {word_limit} words or less. 
+        If the topic of debate is binary you must not generalize it, encourage participants to take sides!
+        Keep your reply to a single sentence.
+        Your reply should always be able to be spoken out loud.
+        Avoid colons in your reply.
+        Please reply with the specified topic in {str(3 * int(word_limit))} words or less. 
     """
 
     topic_specifier_prompt = [
         SystemMessage(content="You can make a task more specific."),
+        HumanMessage(content=content),
+    ]
+
+    specified_topic = llm(topic_specifier_prompt).content
+
+    return specified_topic
+
+def specify_participants(
+    specific_game_description,
+    word_limit,
+    character_names,
+):
+    
+    content = f"""You are given this specific description: {specific_game_description}
+        You are an evil debate moderator which must now introduce the participants in context.
+        Name the participants in the debate: {*character_names[1:],}.
+        Conclude by asking for an opening statement.
+        Keep the description of each participant tp a maximum of {word_limit} words!
+        Keep the opening statement to a maximum of {str(int(0.5 * int(word_limit)))} words!
+        Always begin the output by saying, "Now, the participants in this debate are:"
+    """
+
+    topic_specifier_prompt = [
+        SystemMessage(content="You can describe participants in context."),
         HumanMessage(content=content),
     ]
 
@@ -104,9 +131,10 @@ def generate_character_description(
         message_content = f"""{game_description}
             You are {character_name}, speak in {word_limit} words or less! 
             Speak directly to {character_name}.
-            Keep everything you say to a strict maximum of {word_limit} words.
+            Speak only from your own perspective!
             Your behavioral description is: {character_short_description}.
-            Make sure to ahere strictly to your behavioral description!
+            Be poignant, aggressive, and use swear words if you need to get a point across!
+            Keep everything you say to a strict maximum of {word_limit} words.
             Do not add anything else.
         """
 
@@ -160,6 +188,8 @@ def generate_character_header(
             Your character description: {character_description}
             Always adhere to your character description, be poignant and extreme if you must!
             You must state your true opinion, but make sure to consider what the others are thinking.
+            Speak to other participants whenever possible!
+            Single out other participants in your response if necessary.
             You may be convinced to change your mind if you are presented with a convincing argument.
             If you change your mind, be explicit about it.
             If you change your mind, motivate why your opinion changed.
@@ -196,9 +226,11 @@ def generate_character_system_message(
         # """
 
         content = f"""{character_header}
-            Avoid describing unspoken sounds or actions.
+            Do not describe unspoken sounds or actions.
+            Do not use hashtags (#)!!!
             Do not change roles!
             Do not speak from the perspective of anyone else.
+            Address other participants by name when necessary.
             Stop speaking the moment you finish speaking from your perspective.
             Never forget to keep your response to {word_limit} words!!!
         """
@@ -308,10 +340,21 @@ def select_next_speaker_with_human(
                     print("Prepare to weigh in.")
                     stream(audio_stream)
 
-            # hacky to be max bid of 10 + 1, to be fixed or added to config file
-            bid = 11 if will_participate else 0
+            # hacky to be max bid of 100, to be fixed or added to config file
+            bid = 100 if will_participate else 0
+
         else:
-            bid = ask_for_bid(agent)
+
+            last_speaker = agent.message_history[-1].split(":")[0]
+
+            # do not make the same agent speak twice in a row
+            if agent.name == last_speaker:
+
+                bid = 0
+
+            else:
+
+                bid = ask_for_bid(agent)
         
         # append bid to bids
         bids.append(bid)
@@ -323,9 +366,12 @@ def select_next_speaker_with_human(
 
     print("Bids:")
     for i, (bid, agent) in enumerate(zip(bids, agents)):
+
         print(f"\t{agent.name} bid: {bid}")
+
         if i == idx:
             selected_name = agent.name
+
     print(f"Selected: {selected_name}")
 
     #TODO: if statement in case it's a human, tee up a mdoerator question
@@ -338,6 +384,7 @@ def select_next_speaker_with_human(
     
     stream(audio_stream)
     print("\n")
+
     return idx
 
 @tenacity.retry(
